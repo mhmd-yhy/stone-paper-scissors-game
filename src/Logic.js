@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 const Logic = () => {
   const [yourChoose, setYourChoose] = useState("");
@@ -7,48 +7,60 @@ const Logic = () => {
   const [alertMessage, setAlertMessage] = useState("ابدأ اللعب");
 
   const onChoose_You = (type) => {
-    setYourChoose(type);
-    setCompChoose(getRandomCompChoice());
+    if (!compChoose) {
+      setYourChoose(type);
+      setCompChoose(getRandomCompChoice());
+    }
   };
 
   const getRandomCompChoice = () => {
     const compArr = ["stone", "paper", "scissors"];
-    let compIndex = Math.floor(Math.random() * compArr.length);
+    const compIndex = Math.floor(Math.random() * compArr.length);
     return compArr[compIndex];
   };
 
+  const onComp_Choose = useCallback((yourChoose, compChoose) => {
+    if (yourChoose === compChoose) return "تعادل";
+    if (
+      (yourChoose === "stone" && compChoose === "scissors") ||
+      (yourChoose === "paper" && compChoose === "stone") ||
+      (yourChoose === "scissors" && compChoose === "paper")
+    ) {
+      return "ربحت";
+    }
+    return "خسرت";
+  }, []);
+
   useEffect(() => {
-    let result = onComp_Choose(yourChoose);
-    if (result) {
-      result === "ربحت" ? setScore({ ...score, you: score.you + 1 }) : result === "خسرت" ? setScore({ ...score, comp: score.comp + 1 }) : setScore({ ...score });
-      setAlertMessage(result);
-    }
-    setTimeout(() => {
-      setYourChoose("");
-      setCompChoose("");
-    }, 2000);
-  }, [compChoose]);
+    if (yourChoose && compChoose) {
+      const result = onComp_Choose(yourChoose, compChoose);
+      if (result) {
+        if (result === "ربحت") {
+          setScore((prevScore) => ({ ...prevScore, you: prevScore.you + 1 }));
+        } else if (result === "خسرت") {
+          setScore((prevScore) => ({ ...prevScore, comp: prevScore.comp + 1 }));
+        }
+        setAlertMessage(result);
+      }
 
+      const timeoutId = setTimeout(() => {
+        setYourChoose("");
+        setCompChoose("");
+        setAlertMessage("ابدأ اللعب");
+      }, 2000);
 
-  const onComp_Choose = (yourChoose) => {
-    if (yourChoose === "stone") {
-      if (compChoose === "stone") return "تعادل";
-      if (compChoose === "paper") return "خسرت";
-      if (compChoose === "scissors") return "ربحت";
+      return () => clearTimeout(timeoutId);
     }
-    if (yourChoose === "paper") {
-      if (compChoose === "stone") return "ربحت";
-      if (compChoose === "paper") return "تعادل";
-      if (compChoose === "scissors") return "خسرت";
-    }
-    if (yourChoose === "scissors") {
-      if (compChoose === "stone") return "خسرت";
-      if (compChoose === "paper") return "ربحت";
-      if (compChoose === "scissors") return "تعادل";
-    }
+  }, [yourChoose, compChoose, onComp_Choose]);
+
+  const onReset_Game = () => {
+    setScore({ you: 0, comp: 0 });
+    setYourChoose("");
+    setCompChoose("");
+    setAlertMessage("ابدأ اللعب");
   };
 
-  return [compChoose, onChoose_You, score, alertMessage];
+  return [compChoose, onChoose_You, score, alertMessage, onReset_Game];
 };
 
 export default Logic;

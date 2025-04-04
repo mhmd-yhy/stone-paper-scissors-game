@@ -6,7 +6,7 @@ import MssageAlert from "./components/MssageAlert";
 import Logic from "./Logic";
 
 function App() {
-  const [compChoose, onChoose_You, score, alertMessage] = Logic();
+  const [compChoose, onChoose_You, score, alertMessage, onReset_Game] = Logic();
   return (
     <div className="App">
       <Header />
@@ -15,7 +15,7 @@ function App() {
       <Score score={score} />
       <MssageAlert alertMessage={alertMessage} />
       <div className="flex justify-center mt-5">
-        <button className="py-2 w-52 border border-yellow-700 rounded-lg shadow-md shadow-yellow-700 text-center m-auto">إعادة اللعب</button>
+        <button onClick={onReset_Game} className="py-2 w-52 border border-yellow-700 rounded-lg shadow-md shadow-yellow-700 text-center m-auto">إعادة اللعب</button>
       </div>
     </div>
   );
